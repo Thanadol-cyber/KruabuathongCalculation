@@ -1,1 +1,293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Krua Bua Thong - Profit Simulator</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --success: #059669;
+            --danger: #dc2626;
+            --bg-light: #f8fafc;
+            --border: #cbd5e1;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e2e8f0;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header p { margin: 5px 0 0 0; opacity: 0.8; }
+        
+        .content {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .content { grid-template-columns: 1fr; }
+        }
+        
+        .panel {
+            background: var(--bg-light);
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        .panel h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .result-box {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .result-box.highlight { border-color: var(--success); border-width: 2px; }
+        .result-title { font-size: 14px; color: #64748b; font-weight: bold; text-transform: uppercase; }
+        .result-value { font-size: 28px; font-weight: bold; margin: 5px 0; }
+        .val-success { color: var(--success); }
+        .val-danger { color: var(--danger); }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+            text-align: right;
+        }
+        th { text-align: right; color: #64748b; }
+        td:first-child, th:first-child { text-align: left; }
+        
+        .flex-row { display: flex; gap: 10px; }
+        .flex-row > div { flex: 1; }
+    </style>
+</head>
+<body>
 
+<div class="container">
+    <div class="header">
+        <h1>📊 แบบจำลองกำไร 3-Tiers (Profit Simulator)</h1>
+        <p>เปลี่ยนตัวเลขในช่องสีขาวด้านล่าง ระบบจะคำนวณกำไรอัตโนมัติ</p>
+    </div>
+    
+    <div class="content">
+        <!-- Input Section -->
+        <div class="panel">
+            <h2>⚙️ ตัวแปรตั้งต้น (Inputs)</h2>
+            
+            <div class="form-group">
+                <label>👥 จำนวนลูกค้าต่อเดือน (Total Pax)</label>
+                <input type="number" id="totalPax" value="487" oninput="calculate()">
+            </div>
+            
+            <div class="flex-row">
+                <div class="form-group">
+                    <label>สัดส่วน Tier 599 (%)</label>
+                    <input type="number" id="pct599" value="30" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label>ต้นทุนต่อหัว (Cost)</label>
+                    <input type="number" id="cost599" value="350" oninput="calculate()">
+                </div>
+            </div>
+            
+            <div class="flex-row">
+                <div class="form-group">
+                    <label>สัดส่วน Tier 699 (%)</label>
+                    <input type="number" id="pct699" value="40" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label>ต้นทุนต่อหัว (Cost)</label>
+                    <input type="number" id="cost699" value="520" oninput="calculate()">
+                </div>
+            </div>
+
+            <div class="flex-row">
+                <div class="form-group">
+                    <label>สัดส่วน Tier 799 (%)</label>
+                    <input type="number" id="pct799" value="30" oninput="calculate()">
+                </div>
+                <div class="form-group">
+                    <label>ต้นทุนต่อหัว (Cost)</label>
+                    <input type="number" id="cost799" value="720" oninput="calculate()">
+                </div>
+            </div>
+            <p style="font-size: 12px; color: #e74c3c;" id="pctError"></p>
+        </div>
+
+        <!-- Output Section -->
+        <div class="panel">
+            <h2>📈 ผลลัพธ์การคำนวณ (Outputs)</h2>
+            
+            <div class="result-box highlight">
+                <div class="result-title">กำไรขั้นต้นรวม (Gross Profit)</div>
+                <div class="result-value val-success" id="outGrossProfit">฿ 0</div>
+            </div>
+            
+            <div class="flex-row">
+                <div class="result-box">
+                    <div class="result-title">ยอดขายรวม</div>
+                    <div class="result-value" style="color: #1e3a8a; font-size: 20px;" id="outRevenue">฿ 0</div>
+                </div>
+                <div class="result-box">
+                    <div class="result-title">Food Cost %</div>
+                    <div class="result-value" style="font-size: 20px;" id="outFoodCost">0%</div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tier</th>
+                        <th>ลูกค้า (คน)</th>
+                        <th>กำไร/Tier</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>599.-</strong></td>
+                        <td id="pax599">0</td>
+                        <td id="profit599" class="val-success">฿ 0</td>
+                    </tr>
+                    <tr>
+                        <td><strong>699.-</strong></td>
+                        <td id="pax699">0</td>
+                        <td id="profit699" class="val-success">฿ 0</td>
+                    </tr>
+                    <tr>
+                        <td><strong>799.-</strong></td>
+                        <td id="pax799">0</td>
+                        <td id="profit799" class="val-success">฿ 0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function formatMoney(num) {
+        return "฿ " + num.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+    }
+
+    function calculate() {
+        const totalPax = parseFloat(document.getElementById('totalPax').value) || 0;
+        
+        const pct599 = parseFloat(document.getElementById('pct599').value) || 0;
+        const pct699 = parseFloat(document.getElementById('pct699').value) || 0;
+        const pct799 = parseFloat(document.getElementById('pct799').value) || 0;
+        
+        const cost599 = parseFloat(document.getElementById('cost599').value) || 0;
+        const cost699 = parseFloat(document.getElementById('cost699').value) || 0;
+        const cost799 = parseFloat(document.getElementById('cost799').value) || 0;
+
+        const totalPct = pct599 + pct699 + pct799;
+        const errorMsg = document.getElementById('pctError');
+        if (totalPct !== 100) {
+            errorMsg.innerText = "* สัดส่วนเปอร์เซ็นต์รวมกันต้องเท่ากับ 100% (ปัจจุบัน " + totalPct + "%)";
+        } else {
+            errorMsg.innerText = "";
+        }
+
+        // Calculate Pax per tier
+        const pax599 = Math.round(totalPax * (pct599 / 100));
+        const pax699 = Math.round(totalPax * (pct699 / 100));
+        const pax799 = Math.round(totalPax * (pct799 / 100));
+
+        // Update UI Pax
+        document.getElementById('pax599').innerText = pax599;
+        document.getElementById('pax699').innerText = pax699;
+        document.getElementById('pax799').innerText = pax799;
+
+        // Calculate Revenue
+        const rev599 = pax599 * 599;
+        const rev699 = pax699 * 699;
+        const rev799 = pax799 * 799;
+        const totalRev = rev599 + rev699 + rev799;
+
+        // Calculate Cost
+        const cst599 = pax599 * cost599;
+        const cst699 = pax699 * cost699;
+        const cst799 = pax799 * cost799;
+        const totalCost = cst599 + cst699 + cst799;
+
+        // Calculate Profit
+        const prof599 = rev599 - cst599;
+        const prof699 = rev699 - cst699;
+        const prof799 = rev799 - cst799;
+        const totalProfit = prof599 + prof699 + prof799;
+
+        // Calculate Food Cost %
+        const foodCostPct = totalRev > 0 ? (totalCost / totalRev) * 100 : 0;
+
+        // Update UI Results
+        document.getElementById('profit599').innerText = formatMoney(prof599);
+        document.getElementById('profit699').innerText = formatMoney(prof699);
+        document.getElementById('profit799').innerText = formatMoney(prof799);
+        
+        document.getElementById('outGrossProfit').innerText = formatMoney(totalProfit);
+        document.getElementById('outRevenue').innerText = formatMoney(totalRev);
+        
+        const fcElement = document.getElementById('outFoodCost');
+        fcElement.innerText = foodCostPct.toFixed(1) + "%";
+        if(foodCostPct > 70) {
+            fcElement.className = "result-value val-danger";
+        } else {
+            fcElement.className = "result-value val-success";
+        }
+    }
+
+    // Initial calculation on load
+    window.onload = calculate;
+</script>
+</body>
+</html>
